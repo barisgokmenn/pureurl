@@ -10,7 +10,6 @@ const PureURL = () => {
   const [showComparison, setShowComparison] = useState(false);
   const outputRef = useRef(null);
 
-  // Temizlenecek parametreler - daha kapsamlı liste
   const trackingParams = [
   // UTM parametreleri
   'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'utm_id',
@@ -90,7 +89,6 @@ const PureURL = () => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      // Fallback
       outputRef.current?.select();
       document.execCommand('copy');
       setCopied(true);
