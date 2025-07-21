@@ -34,7 +34,6 @@ const PureURL = () => {
 
       const urlObj = new URL(processedUrl);
 
-      // Query parametrelerini temizle
       const searchParams = new URLSearchParams(urlObj.search);
       const trackingParamsSet = new Set(trackingParams.map(p => p.toLowerCase()));
 
@@ -46,7 +45,6 @@ const PureURL = () => {
 
       urlObj.search = searchParams.toString();
 
-      // Amazon için: sadece /dp/PRODUCT_ID kısmını döndür
       if (urlObj.hostname.includes('amazon.')) {
         const dpMatch = urlObj.pathname.match(/\/dp\/[A-Z0-9]+/i);
         if (dpMatch) {
@@ -54,11 +52,10 @@ const PureURL = () => {
         }
       }
 
-      // Diğer URL'lerde query temizlenmiş haliyle path'i döndür
       return urlObj.origin + urlObj.pathname;
 
     } catch {
-      return url; // Geçersiz URL ise orijinali dön
+      return url;
     }
   };
 
