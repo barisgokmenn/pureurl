@@ -11,58 +11,56 @@ const PureURL = () => {
   const outputRef = useRef(null);
 
   const trackingParams = [
-  // UTM parametreleri
-  'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'utm_id',
-
-  // Facebook
-  'fbclid', 'fb_action_ids', 'fb_action_types', 'fb_source', 'fb_ref',
-
-  // Google
-  'gclid', 'gclsrc', 'gcl_au', '_ga', '_gl',
-
-  // Amazon ve diğer e-ticaret takip parametreleri
-  'tag', 'ref', 'ref_', 'linkCode', 'camp', 'creative', 'creativeASIN','_encoding',
-  'pd_rd_w', 'content-id', 'pf_rd_p', 'pf_rd_r', 'pd_rd_wg', 'pd_rd_r', 'pd_rd_i',
-
-  // Sosyal medya ve diğer platformlar
-  'igshid', 'igsh', 'si', 'feature', 't', 's', 'ss_source', 'ss_campaign_id',
-
-  // Email pazarlama
-  'mc_cid', 'mc_eid', 'campaign', 'source', 'medium',
-
-  // Genel takip ve affiliate
-  'referral', 'affiliate', 'aff', 'partner', 'promo', 'discount',
-  'click_id', 'clickid', 'msclkid', 'email_source', 'email_campaign',
-];
+    'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'utm_id',
+    'fbclid', 'fb_action_ids', 'fb_action_types', 'fb_source', 'fb_ref',
+    'gclid', 'gclsrc', 'gcl_au', '_ga', '_gl',
+    'tag', 'ref', 'ref_', 'linkCode', 'camp', 'creative', 'creativeASIN', '_encoding',
+    'pd_rd_w', 'content-id', 'pf_rd_p', 'pf_rd_r', 'pd_rd_wg', 'pd_rd_r', 'pd_rd_i',
+    'igshid', 'igsh', 'si', 'feature', 't', 's', 'ss_source', 'ss_campaign_id',
+    'mc_cid', 'mc_eid', 'campaign', 'source', 'medium',
+    'referral', 'affiliate', 'aff', 'partner', 'promo', 'discount',
+    'click_id', 'clickid', 'msclkid', 'email_source', 'email_campaign',
+  ];
 
 
   const cleanUrl = (url) => {
-  try {
-    if (!url.trim()) return '';
-    
-    let processedUrl = url.trim();
-    if (!processedUrl.match(/^https?:\/\//i)) {
-      processedUrl = 'https://' + processedUrl;
-    }
+    try {
+      if (!url.trim()) return '';
 
-    const urlObj = new URL(processedUrl);
-    const searchParams = new URLSearchParams(urlObj.search);
+      let processedUrl = url.trim();
+      if (!processedUrl.match(/^https?:\/\//i)) {
+        processedUrl = 'https://' + processedUrl;
+      }
 
-    trackingParams.forEach(param => {
-      for (const key of searchParams.keys()) {
-        if (key.toLowerCase() === param.toLowerCase()) {
+      const urlObj = new URL(processedUrl);
+
+      // Query parametrelerini temizle
+      const searchParams = new URLSearchParams(urlObj.search);
+      const trackingParamsSet = new Set(trackingParams.map(p => p.toLowerCase()));
+
+      for (const [key] of searchParams.entries()) {
+        if (trackingParamsSet.has(key.toLowerCase())) {
           searchParams.delete(key);
         }
       }
-    });
 
-    urlObj.search = searchParams.toString();
+      urlObj.search = searchParams.toString();
 
-    return urlObj.toString();
-  } catch (error) {
-    throw new Error('Geçersiz URL formatı');
-  }
-};
+      // Amazon için: sadece /dp/PRODUCT_ID kısmını döndür
+      if (urlObj.hostname.includes('amazon.')) {
+        const dpMatch = urlObj.pathname.match(/\/dp\/[A-Z0-9]+/i);
+        if (dpMatch) {
+          return urlObj.origin + dpMatch[0];
+        }
+      }
+
+      // Diğer URL'lerde query temizlenmiş haliyle path'i döndür
+      return urlObj.origin + urlObj.pathname;
+
+    } catch {
+      return url; // Geçersiz URL ise orijinali dön
+    }
+  };
 
 
   const handleCleanUrl = () => {
